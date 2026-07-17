@@ -84,6 +84,19 @@
 }
 
 /* Print / PDF Export Styles */
+/* ── Mobile optimisation ── */
+@media (max-width: 640px) {
+  h1 { font-size: 1.5rem !important; }
+  h2 { font-size: 1.125rem !important; }
+  .p-6 { padding: 1rem !important; }
+  .p-8 { padding: 1.25rem !important; }
+  .text-3xl { font-size: 1.5rem !important; }
+  .text-2xl { font-size: 1.25rem !important; }
+  .recharts-responsive-container { min-height: 180px; }
+  table { font-size: 0.75rem; }
+  [class*="tracking-wider"] button { display: none; }
+}
+
 @media print {
   body {
     -webkit-print-color-adjust: exact;

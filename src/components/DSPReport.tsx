@@ -191,6 +191,41 @@ const DSPReport = ({ data }: DSPReportProps) => {
   const bestDow = dowData.reduce((a, b) => a.avgROAS > b.avgROAS ? a : b);
   const worstDow = dowData.reduce((a, b) => a.avgROAS < b.avgROAS ? a : b);
 
+  // Per-half rollups for factual panels (W2 = second half, W1 = first half)
+  const aggHalf = (rows: typeof data.rows) => {
+    const spend = rows.reduce((s, r) => s + r.spend, 0);
+    const impressions = rows.reduce((s, r) => s + r.impressions, 0);
+    const dpv = rows.reduce((s, r) => s + r.dpv, 0);
+    const atc = rows.reduce((s, r) => s + r.atc, 0);
+    const purchases = rows.reduce((s, r) => s + r.purchases, 0);
+    const ntbPurchases = rows.reduce((s, r) => s + r.ntbPurchases, 0);
+    const sales = rows.reduce((s, r) => s + r.sales, 0);
+    const ntbSales = rows.reduce((s, r) => s + r.ntbSales, 0);
+    return {
+      spend, impressions, dpv, atc, purchases, ntbPurchases, sales, ntbSales,
+      ctr: impressions > 0 ? rows.reduce((s, r) => s + r.ctr * r.impressions, 0) / impressions : 0,
+      dpvRate: impressions > 0 ? (dpv / impressions) * 100 : 0,
+      atcRate: dpv > 0 ? (atc / dpv) * 100 : 0,
+      purchaseRate: atc > 0 ? (purchases / atc) * 100 : 0,
+      ntbPercent: purchases > 0 ? (ntbPurchases / purchases) * 100 : 0,
+      roas: spend > 0 ? sales / spend : 0,
+      ntbCPA: ntbPurchases > 0 ? spend / ntbPurchases : 0,
+      cpa: purchases > 0 ? spend / purchases : 0,
+      costPerDPV: dpv > 0 ? spend / dpv : 0,
+    };
+  };
+  const W1 = aggHalf(firstHalf);
+  const W2 = aggHalf(secondHalf);
+  const fmtDeltaPts = (a: number, b: number) => {
+    const d = a - b;
+    return `${d >= 0 ? "+" : ""}${d.toFixed(2)}`;
+  };
+  const fmtDeltaPct = (a: number, b: number) => {
+    if (b === 0) return "—";
+    const d = ((a - b) / b) * 100;
+    return `${d >= 0 ? "+" : ""}${d.toFixed(1)}%`;
+  };
+
   // Cumulative
   let cumSpend = 0, cumSales = 0;
   const cumulativeData = data.rows.map(r => {
@@ -310,28 +345,19 @@ const DSPReport = ({ data }: DSPReportProps) => {
                   </AreaChart>
                 </ResponsiveContainer>
 
-                {/* Bottom insight pills */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
-                  <div className="flex items-start gap-2 bg-green-50 border border-green-200 rounded-lg p-3">
-                    <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-display font-extrabold text-xs uppercase">{fmtPct(data.avgNTBPercent)} NTB @ {data.overallROAS.toFixed(1)}X ROAS</p>
-                      <p className="font-body text-[11px] text-muted-foreground">Net-new demand generation validates DSP scaling</p>
-                    </div>
+                {/* Summary stats below chart */}
+                <div className="grid grid-cols-3 gap-3 mt-4">
+                  <div className="bg-background rounded-lg border border-border p-3 text-center">
+                    <p className="font-display font-bold text-[9px] uppercase tracking-wider text-muted-foreground">Avg Daily Sales</p>
+                    <p className="font-display font-extrabold text-lg">{fmtCurrency(data.totalSales / data.rows.length)}</p>
                   </div>
-                  <div className="flex items-start gap-2 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                    <AlertTriangle className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-display font-extrabold text-xs uppercase">ROAS {roasTrend >= 0 ? 'Trending Up' : 'Trending Down'}</p>
-                      <p className="font-body text-[11px] text-muted-foreground">{roasTrend >= 0 ? 'Momentum supports current budget allocation' : 'Consider creative refresh or audience optimization'}</p>
-                    </div>
+                  <div className="bg-background rounded-lg border border-border p-3 text-center">
+                    <p className="font-display font-bold text-[9px] uppercase tracking-wider text-muted-foreground">Avg Daily Spend</p>
+                    <p className="font-display font-extrabold text-lg">{fmtCurrency(data.avgDailySpend)}</p>
                   </div>
-                  <div className="flex items-start gap-2 bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <RefreshCw className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-display font-extrabold text-xs uppercase">Sales Mirror DSP Volume</p>
-                      <p className="font-body text-[11px] text-muted-foreground">Full-funnel synergy sustains conversion momentum</p>
-                    </div>
+                  <div className="bg-background rounded-lg border border-border p-3 text-center">
+                    <p className="font-display font-bold text-[9px] uppercase tracking-wider text-muted-foreground">Total Purchases</p>
+                    <p className="font-display font-extrabold text-lg">{fmt(data.totalPurchases)}</p>
                   </div>
                 </div>
               </div>
@@ -369,6 +395,29 @@ const DSPReport = ({ data }: DSPReportProps) => {
             </div>
 
             <div className="space-y-3">
+              <div className="bg-background rounded-xl border border-border p-4">
+                <h4 className="font-display font-extrabold text-[10px] uppercase tracking-[0.15em] text-muted-foreground mb-3">
+                  Period Comparison
+                </h4>
+                <div className="space-y-2">
+                  {[
+                    { label: "ROAS", value: `${W2.roas.toFixed(2)}x`, delta: fmtDeltaPct(W2.roas, W1.roas) },
+                    { label: "CTR", value: fmtPct(W2.ctr), delta: fmtDeltaPts(W2.ctr, W1.ctr) + " pts" },
+                    { label: "Sales", value: fmtCurrency(W2.sales), delta: fmtDeltaPct(W2.sales, W1.sales) },
+                    { label: "Spend", value: fmtCurrency(W2.spend), delta: fmtDeltaPct(W2.spend, W1.spend) },
+                    { label: "Impressions", value: fmt(W2.impressions), delta: fmtDeltaPct(W2.impressions, W1.impressions) },
+                    { label: "Purchases", value: fmt(W2.purchases), delta: fmtDeltaPct(W2.purchases, W1.purchases) },
+                  ].map(m => (
+                    <div key={m.label} className="grid grid-cols-[1fr_auto_auto] items-baseline gap-3 pb-1.5 border-b border-border last:border-b-0 last:pb-0">
+                      <span className="font-display font-bold text-[11px] uppercase tracking-wide text-muted-foreground">{m.label}</span>
+                      <span className="font-display font-extrabold text-sm tabular-nums">{m.value}</span>
+                      <span className={`font-body text-[10px] tabular-nums ${m.delta.startsWith("+") ? "text-emerald-600" : m.delta.startsWith("-") ? "text-red-600" : "text-muted-foreground"}`}>
+                        {m.delta}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -491,6 +540,29 @@ const DSPReport = ({ data }: DSPReportProps) => {
             </div>
 
             <div className="space-y-3">
+              <div className="bg-background rounded-xl border border-border p-4">
+                <h4 className="font-display font-extrabold text-[10px] uppercase tracking-[0.15em] text-muted-foreground mb-3">
+                  Metric Breakdown
+                </h4>
+                <div className="space-y-2">
+                  {[
+                    { label: "CTR", value: fmtPct(W2.ctr), delta: fmtDeltaPts(W2.ctr, W1.ctr) + " pts" },
+                    { label: "DPV Rate", value: fmtPct(W2.dpvRate), delta: fmtDeltaPts(W2.dpvRate, W1.dpvRate) + " pts" },
+                    { label: "ATC Rate", value: fmtPct(W2.atcRate), delta: fmtDeltaPts(W2.atcRate, W1.atcRate) + " pts" },
+                    { label: "Purch. Rate", value: fmtPct(W2.purchaseRate), delta: fmtDeltaPts(W2.purchaseRate, W1.purchaseRate) + " pts" },
+                    { label: "NTB %", value: fmtPct(W2.ntbPercent), delta: fmtDeltaPts(W2.ntbPercent, W1.ntbPercent) + " pts" },
+                    { label: "ROAS", value: `${W2.roas.toFixed(2)}x`, delta: fmtDeltaPct(W2.roas, W1.roas) },
+                  ].map(m => (
+                    <div key={m.label} className="grid grid-cols-[1fr_auto_auto] items-baseline gap-3 pb-1.5 border-b border-border last:border-b-0 last:pb-0">
+                      <span className="font-display font-bold text-[11px] uppercase tracking-wide text-muted-foreground">{m.label}</span>
+                      <span className="font-display font-extrabold text-sm tabular-nums">{m.value}</span>
+                      <span className={`font-body text-[10px] tabular-nums ${m.delta.startsWith("+") ? "text-emerald-600" : m.delta.startsWith("-") ? "text-red-600" : "text-muted-foreground"}`}>
+                        {m.delta}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -595,6 +667,29 @@ const DSPReport = ({ data }: DSPReportProps) => {
             </div>
 
             <div className="space-y-3">
+              <div className="bg-background rounded-xl border border-border p-4">
+                <h4 className="font-display font-extrabold text-[10px] uppercase tracking-[0.15em] text-muted-foreground mb-3">
+                  NTB Summary
+                </h4>
+                <div className="space-y-2">
+                  {[
+                    { label: "NTB Purchases", value: fmt(W2.ntbPurchases), delta: fmtDeltaPct(W2.ntbPurchases, W1.ntbPurchases) },
+                    { label: "NTB Sales", value: fmtCurrency(W2.ntbSales), delta: fmtDeltaPct(W2.ntbSales, W1.ntbSales) },
+                    { label: "NTB %", value: fmtPct(W2.ntbPercent), delta: fmtDeltaPts(W2.ntbPercent, W1.ntbPercent) + " pts" },
+                    { label: "NTB CPA", value: `$${W2.ntbCPA.toFixed(2)}`, delta: fmtDeltaPct(W2.ntbCPA, W1.ntbCPA) },
+                    { label: "Total Purchases", value: fmt(W2.purchases), delta: fmtDeltaPct(W2.purchases, W1.purchases) },
+                    { label: "Total Sales", value: fmtCurrency(W2.sales), delta: fmtDeltaPct(W2.sales, W1.sales) },
+                  ].map(m => (
+                    <div key={m.label} className="grid grid-cols-[1fr_auto_auto] items-baseline gap-3 pb-1.5 border-b border-border last:border-b-0 last:pb-0">
+                      <span className="font-display font-bold text-[11px] uppercase tracking-wide text-muted-foreground">{m.label}</span>
+                      <span className="font-display font-extrabold text-sm tabular-nums">{m.value}</span>
+                      <span className={`font-body text-[10px] tabular-nums ${m.delta.startsWith("+") ? "text-emerald-600" : m.delta.startsWith("-") ? "text-red-600" : "text-muted-foreground"}`}>
+                        {m.delta}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -631,6 +726,26 @@ const DSPReport = ({ data }: DSPReportProps) => {
             </div>
 
             <div className="space-y-3">
+              <div className="bg-background rounded-xl border border-border overflow-hidden">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="bg-foreground">
+                      <th className="px-3 py-2 text-left font-display font-bold text-[9px] uppercase tracking-wider text-card">Day</th>
+                      <th className="px-3 py-2 text-right font-display font-bold text-[9px] uppercase tracking-wider text-card">Avg Sales</th>
+                      <th className="px-3 py-2 text-right font-display font-bold text-[9px] uppercase tracking-wider text-card">Avg ROAS</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {dowData.map((d, i) => (
+                      <tr key={d.day} className={`${i % 2 === 0 ? 'bg-card' : 'bg-background'} ${d.day === bestDow.day ? 'ring-1 ring-inset ring-primary/30' : ''}`}>
+                        <td className="px-3 py-2 font-body font-medium">{d.day}</td>
+                        <td className="px-3 py-2 text-right font-body tabular-nums">{fmtCurrency(d.avgSales)}</td>
+                        <td className="px-3 py-2 text-right font-body font-semibold tabular-nums text-primary">{d.avgROAS.toFixed(2)}x</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
@@ -680,6 +795,29 @@ const DSPReport = ({ data }: DSPReportProps) => {
             </div>
 
             <div className="space-y-3">
+              <div className="bg-background rounded-xl border border-border p-4">
+                <h4 className="font-display font-extrabold text-[10px] uppercase tracking-[0.15em] text-muted-foreground mb-3">
+                  Cost Metrics
+                </h4>
+                <div className="space-y-2">
+                  {[
+                    { label: "CPA", value: `$${W2.cpa.toFixed(2)}`, delta: fmtDeltaPct(W2.cpa, W1.cpa) },
+                    { label: "NTB CPA", value: `$${W2.ntbCPA.toFixed(2)}`, delta: fmtDeltaPct(W2.ntbCPA, W1.ntbCPA) },
+                    { label: "Cost / DPV", value: `$${W2.costPerDPV.toFixed(2)}`, delta: fmtDeltaPct(W2.costPerDPV, W1.costPerDPV) },
+                    { label: "ROAS", value: `${W2.roas.toFixed(2)}x`, delta: fmtDeltaPct(W2.roas, W1.roas) },
+                    { label: "Spend", value: fmtCurrency(W2.spend), delta: fmtDeltaPct(W2.spend, W1.spend) },
+                    { label: "Sales", value: fmtCurrency(W2.sales), delta: fmtDeltaPct(W2.sales, W1.sales) },
+                  ].map(m => (
+                    <div key={m.label} className="grid grid-cols-[1fr_auto_auto] items-baseline gap-3 pb-1.5 border-b border-border last:border-b-0 last:pb-0">
+                      <span className="font-display font-bold text-[11px] uppercase tracking-wide text-muted-foreground">{m.label}</span>
+                      <span className="font-display font-extrabold text-sm tabular-nums">{m.value}</span>
+                      <span className={`font-body text-[10px] tabular-nums ${m.delta.startsWith("+") ? "text-emerald-600" : m.delta.startsWith("-") ? "text-red-600" : "text-muted-foreground"}`}>
+                        {m.delta}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -722,6 +860,18 @@ const DSPReport = ({ data }: DSPReportProps) => {
                 <p className="font-display font-bold text-[10px] uppercase tracking-wider text-muted-foreground">Net Revenue</p>
                 <p className="font-display font-extrabold text-3xl text-primary">{fmtCurrency(data.totalSales - data.totalSpend)}</p>
                 <p className="font-body text-xs text-muted-foreground mt-1">Sales minus ad spend</p>
+              </div>
+              <div className="bg-background rounded-xl border border-border p-5 text-center">
+                <p className="font-display font-bold text-[10px] uppercase tracking-wider text-muted-foreground">Total Spend</p>
+                <p className="font-display font-extrabold text-2xl">{fmtCurrency(data.totalSpend)}</p>
+              </div>
+              <div className="bg-background rounded-xl border border-border p-5 text-center">
+                <p className="font-display font-bold text-[10px] uppercase tracking-wider text-muted-foreground">Total Sales</p>
+                <p className="font-display font-extrabold text-2xl">{fmtCurrency(data.totalSales)}</p>
+              </div>
+              <div className="bg-background rounded-xl border border-border p-5 text-center">
+                <p className="font-display font-bold text-[10px] uppercase tracking-wider text-muted-foreground">Period ROAS</p>
+                <p className="font-display font-extrabold text-2xl text-primary">{data.overallROAS.toFixed(2)}x</p>
               </div>
             </div>
           </div>

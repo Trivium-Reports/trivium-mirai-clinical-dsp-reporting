@@ -397,21 +397,28 @@ const DSPReport = ({ data }: DSPReportProps) => {
             <div className="space-y-3">
               <div className="bg-background rounded-xl border border-border p-4">
                 <h4 className="font-display font-extrabold text-[10px] uppercase tracking-[0.15em] text-muted-foreground mb-3">
-                  Period Comparison
+                  Week 1 vs Week 2
                 </h4>
-                <div className="space-y-2">
+                <div className="grid grid-cols-[1fr_auto_auto_auto] gap-x-3 gap-y-0 items-baseline mb-2 pb-1.5 border-b-2 border-border">
+                  <span className="font-display font-bold text-[9px] uppercase tracking-wider text-muted-foreground"></span>
+                  <span className="font-display font-bold text-[9px] uppercase tracking-wider text-muted-foreground text-right">W1</span>
+                  <span className="font-display font-bold text-[9px] uppercase tracking-wider text-muted-foreground text-right">W2</span>
+                  <span className="font-display font-bold text-[9px] uppercase tracking-wider text-muted-foreground text-right">Δ</span>
+                </div>
+                <div className="space-y-1">
                   {[
-                    { label: "ROAS", value: `${W2.roas.toFixed(2)}x`, delta: fmtDeltaPct(W2.roas, W1.roas) },
-                    { label: "CTR", value: fmtPct(W2.ctr), delta: fmtDeltaPts(W2.ctr, W1.ctr) + " pts" },
-                    { label: "Sales", value: fmtCurrency(W2.sales), delta: fmtDeltaPct(W2.sales, W1.sales) },
-                    { label: "Spend", value: fmtCurrency(W2.spend), delta: fmtDeltaPct(W2.spend, W1.spend) },
-                    { label: "Impressions", value: fmt(W2.impressions), delta: fmtDeltaPct(W2.impressions, W1.impressions) },
-                    { label: "Purchases", value: fmt(W2.purchases), delta: fmtDeltaPct(W2.purchases, W1.purchases) },
+                    { label: "ROAS",   w1: `${W1.roas.toFixed(2)}x`, w2: `${W2.roas.toFixed(2)}x`, delta: fmtDeltaPct(W2.roas, W1.roas) },
+                    { label: "CTR",    w1: fmtPct(W1.ctr),           w2: fmtPct(W2.ctr),            delta: fmtDeltaPts(W2.ctr, W1.ctr) + " pts" },
+                    { label: "Sales",  w1: fmtCurrency(W1.sales),    w2: fmtCurrency(W2.sales),     delta: fmtDeltaPct(W2.sales, W1.sales) },
+                    { label: "Spend",  w1: fmtCurrency(W1.spend),    w2: fmtCurrency(W2.spend),     delta: fmtDeltaPct(W2.spend, W1.spend) },
+                    { label: "Impr.",   w1: fmt(W1.impressions),      w2: fmt(W2.impressions),       delta: fmtDeltaPct(W2.impressions, W1.impressions) },
+                    { label: "Purch.",  w1: fmt(W1.purchases),        w2: fmt(W2.purchases),         delta: fmtDeltaPct(W2.purchases, W1.purchases) },
                   ].map(m => (
-                    <div key={m.label} className="grid grid-cols-[1fr_auto_auto] items-baseline gap-3 pb-1.5 border-b border-border last:border-b-0 last:pb-0">
-                      <span className="font-display font-bold text-[11px] uppercase tracking-wide text-muted-foreground">{m.label}</span>
-                      <span className="font-display font-extrabold text-sm tabular-nums">{m.value}</span>
-                      <span className={`font-body text-[10px] tabular-nums ${m.delta.startsWith("+") ? "text-emerald-600" : m.delta.startsWith("-") ? "text-red-600" : "text-muted-foreground"}`}>
+                    <div key={m.label} className="grid grid-cols-[1fr_auto_auto_auto] gap-x-3 items-baseline py-1 border-b border-border/50 last:border-b-0">
+                      <span className="font-display font-bold text-[10px] uppercase tracking-wide text-muted-foreground">{m.label}</span>
+                      <span className="font-body text-[11px] tabular-nums text-muted-foreground text-right">{m.w1}</span>
+                      <span className="font-display font-extrabold text-[12px] tabular-nums text-right">{m.w2}</span>
+                      <span className={`font-body text-[10px] tabular-nums text-right ${m.delta.startsWith("+") ? "text-emerald-600" : m.delta.startsWith("-") ? "text-red-600" : "text-muted-foreground"}`}>
                         {m.delta}
                       </span>
                     </div>
@@ -542,21 +549,28 @@ const DSPReport = ({ data }: DSPReportProps) => {
             <div className="space-y-3">
               <div className="bg-background rounded-xl border border-border p-4">
                 <h4 className="font-display font-extrabold text-[10px] uppercase tracking-[0.15em] text-muted-foreground mb-3">
-                  Metric Breakdown
+                  Funnel Metrics — W1 vs W2
                 </h4>
-                <div className="space-y-2">
+                <div className="grid grid-cols-[1fr_auto_auto_auto] gap-x-3 gap-y-0 items-baseline mb-2 pb-1.5 border-b-2 border-border">
+                  <span className="font-display font-bold text-[9px] uppercase tracking-wider text-muted-foreground"></span>
+                  <span className="font-display font-bold text-[9px] uppercase tracking-wider text-muted-foreground text-right">W1</span>
+                  <span className="font-display font-bold text-[9px] uppercase tracking-wider text-muted-foreground text-right">W2</span>
+                  <span className="font-display font-bold text-[9px] uppercase tracking-wider text-muted-foreground text-right">Δ</span>
+                </div>
+                <div className="space-y-1">
                   {[
-                    { label: "CTR", value: fmtPct(W2.ctr), delta: fmtDeltaPts(W2.ctr, W1.ctr) + " pts" },
-                    { label: "DPV Rate", value: fmtPct(W2.dpvRate), delta: fmtDeltaPts(W2.dpvRate, W1.dpvRate) + " pts" },
-                    { label: "ATC Rate", value: fmtPct(W2.atcRate), delta: fmtDeltaPts(W2.atcRate, W1.atcRate) + " pts" },
-                    { label: "Purch. Rate", value: fmtPct(W2.purchaseRate), delta: fmtDeltaPts(W2.purchaseRate, W1.purchaseRate) + " pts" },
-                    { label: "NTB %", value: fmtPct(W2.ntbPercent), delta: fmtDeltaPts(W2.ntbPercent, W1.ntbPercent) + " pts" },
-                    { label: "ROAS", value: `${W2.roas.toFixed(2)}x`, delta: fmtDeltaPct(W2.roas, W1.roas) },
+                    { label: "CTR",         w1: fmtPct(W1.ctr),          w2: fmtPct(W2.ctr),          delta: fmtDeltaPts(W2.ctr, W1.ctr) + " pts" },
+                    { label: "DPV Rate",    w1: fmtPct(W1.dpvRate),      w2: fmtPct(W2.dpvRate),      delta: fmtDeltaPts(W2.dpvRate, W1.dpvRate) + " pts" },
+                    { label: "ATC Rate",    w1: fmtPct(W1.atcRate),      w2: fmtPct(W2.atcRate),      delta: fmtDeltaPts(W2.atcRate, W1.atcRate) + " pts" },
+                    { label: "Purch. Rate", w1: fmtPct(W1.purchaseRate), w2: fmtPct(W2.purchaseRate), delta: fmtDeltaPts(W2.purchaseRate, W1.purchaseRate) + " pts" },
+                    { label: "NTB %",       w1: fmtPct(W1.ntbPercent),   w2: fmtPct(W2.ntbPercent),   delta: fmtDeltaPts(W2.ntbPercent, W1.ntbPercent) + " pts" },
+                    { label: "ROAS",        w1: `${W1.roas.toFixed(2)}x`, w2: `${W2.roas.toFixed(2)}x`, delta: fmtDeltaPct(W2.roas, W1.roas) },
                   ].map(m => (
-                    <div key={m.label} className="grid grid-cols-[1fr_auto_auto] items-baseline gap-3 pb-1.5 border-b border-border last:border-b-0 last:pb-0">
-                      <span className="font-display font-bold text-[11px] uppercase tracking-wide text-muted-foreground">{m.label}</span>
-                      <span className="font-display font-extrabold text-sm tabular-nums">{m.value}</span>
-                      <span className={`font-body text-[10px] tabular-nums ${m.delta.startsWith("+") ? "text-emerald-600" : m.delta.startsWith("-") ? "text-red-600" : "text-muted-foreground"}`}>
+                    <div key={m.label} className="grid grid-cols-[1fr_auto_auto_auto] gap-x-3 items-baseline py-1 border-b border-border/50 last:border-b-0">
+                      <span className="font-display font-bold text-[10px] uppercase tracking-wide text-muted-foreground">{m.label}</span>
+                      <span className="font-body text-[11px] tabular-nums text-muted-foreground text-right">{m.w1}</span>
+                      <span className="font-display font-extrabold text-[12px] tabular-nums text-right">{m.w2}</span>
+                      <span className={`font-body text-[10px] tabular-nums text-right ${m.delta.startsWith("+") ? "text-emerald-600" : m.delta.startsWith("-") ? "text-red-600" : "text-muted-foreground"}`}>
                         {m.delta}
                       </span>
                     </div>
@@ -669,21 +683,28 @@ const DSPReport = ({ data }: DSPReportProps) => {
             <div className="space-y-3">
               <div className="bg-background rounded-xl border border-border p-4">
                 <h4 className="font-display font-extrabold text-[10px] uppercase tracking-[0.15em] text-muted-foreground mb-3">
-                  NTB Summary
+                  NTB — W1 vs W2
                 </h4>
-                <div className="space-y-2">
+                <div className="grid grid-cols-[1fr_auto_auto_auto] gap-x-3 gap-y-0 items-baseline mb-2 pb-1.5 border-b-2 border-border">
+                  <span className="font-display font-bold text-[9px] uppercase tracking-wider text-muted-foreground"></span>
+                  <span className="font-display font-bold text-[9px] uppercase tracking-wider text-muted-foreground text-right">W1</span>
+                  <span className="font-display font-bold text-[9px] uppercase tracking-wider text-muted-foreground text-right">W2</span>
+                  <span className="font-display font-bold text-[9px] uppercase tracking-wider text-muted-foreground text-right">Δ</span>
+                </div>
+                <div className="space-y-1">
                   {[
-                    { label: "NTB Purchases", value: fmt(W2.ntbPurchases), delta: fmtDeltaPct(W2.ntbPurchases, W1.ntbPurchases) },
-                    { label: "NTB Sales", value: fmtCurrency(W2.ntbSales), delta: fmtDeltaPct(W2.ntbSales, W1.ntbSales) },
-                    { label: "NTB %", value: fmtPct(W2.ntbPercent), delta: fmtDeltaPts(W2.ntbPercent, W1.ntbPercent) + " pts" },
-                    { label: "NTB CPA", value: `$${W2.ntbCPA.toFixed(2)}`, delta: fmtDeltaPct(W2.ntbCPA, W1.ntbCPA) },
-                    { label: "Total Purchases", value: fmt(W2.purchases), delta: fmtDeltaPct(W2.purchases, W1.purchases) },
-                    { label: "Total Sales", value: fmtCurrency(W2.sales), delta: fmtDeltaPct(W2.sales, W1.sales) },
+                    { label: "NTB Purch.", w1: fmt(W1.ntbPurchases),       w2: fmt(W2.ntbPurchases),       delta: fmtDeltaPct(W2.ntbPurchases, W1.ntbPurchases) },
+                    { label: "NTB Sales",  w1: fmtCurrency(W1.ntbSales),   w2: fmtCurrency(W2.ntbSales),   delta: fmtDeltaPct(W2.ntbSales, W1.ntbSales) },
+                    { label: "NTB %",      w1: fmtPct(W1.ntbPercent),      w2: fmtPct(W2.ntbPercent),      delta: fmtDeltaPts(W2.ntbPercent, W1.ntbPercent) + " pts" },
+                    { label: "NTB CPA",    w1: `$${W1.ntbCPA.toFixed(2)}`, w2: `$${W2.ntbCPA.toFixed(2)}`, delta: fmtDeltaPct(W2.ntbCPA, W1.ntbCPA) },
+                    { label: "Tot. Purch.", w1: fmt(W1.purchases),         w2: fmt(W2.purchases),          delta: fmtDeltaPct(W2.purchases, W1.purchases) },
+                    { label: "Tot. Sales",  w1: fmtCurrency(W1.sales),     w2: fmtCurrency(W2.sales),      delta: fmtDeltaPct(W2.sales, W1.sales) },
                   ].map(m => (
-                    <div key={m.label} className="grid grid-cols-[1fr_auto_auto] items-baseline gap-3 pb-1.5 border-b border-border last:border-b-0 last:pb-0">
-                      <span className="font-display font-bold text-[11px] uppercase tracking-wide text-muted-foreground">{m.label}</span>
-                      <span className="font-display font-extrabold text-sm tabular-nums">{m.value}</span>
-                      <span className={`font-body text-[10px] tabular-nums ${m.delta.startsWith("+") ? "text-emerald-600" : m.delta.startsWith("-") ? "text-red-600" : "text-muted-foreground"}`}>
+                    <div key={m.label} className="grid grid-cols-[1fr_auto_auto_auto] gap-x-3 items-baseline py-1 border-b border-border/50 last:border-b-0">
+                      <span className="font-display font-bold text-[10px] uppercase tracking-wide text-muted-foreground">{m.label}</span>
+                      <span className="font-body text-[11px] tabular-nums text-muted-foreground text-right">{m.w1}</span>
+                      <span className="font-display font-extrabold text-[12px] tabular-nums text-right">{m.w2}</span>
+                      <span className={`font-body text-[10px] tabular-nums text-right ${m.delta.startsWith("+") ? "text-emerald-600" : m.delta.startsWith("-") ? "text-red-600" : "text-muted-foreground"}`}>
                         {m.delta}
                       </span>
                     </div>
@@ -797,21 +818,28 @@ const DSPReport = ({ data }: DSPReportProps) => {
             <div className="space-y-3">
               <div className="bg-background rounded-xl border border-border p-4">
                 <h4 className="font-display font-extrabold text-[10px] uppercase tracking-[0.15em] text-muted-foreground mb-3">
-                  Cost Metrics
+                  Cost Metrics — W1 vs W2
                 </h4>
-                <div className="space-y-2">
+                <div className="grid grid-cols-[1fr_auto_auto_auto] gap-x-3 gap-y-0 items-baseline mb-2 pb-1.5 border-b-2 border-border">
+                  <span className="font-display font-bold text-[9px] uppercase tracking-wider text-muted-foreground"></span>
+                  <span className="font-display font-bold text-[9px] uppercase tracking-wider text-muted-foreground text-right">W1</span>
+                  <span className="font-display font-bold text-[9px] uppercase tracking-wider text-muted-foreground text-right">W2</span>
+                  <span className="font-display font-bold text-[9px] uppercase tracking-wider text-muted-foreground text-right">Δ</span>
+                </div>
+                <div className="space-y-1">
                   {[
-                    { label: "CPA", value: `$${W2.cpa.toFixed(2)}`, delta: fmtDeltaPct(W2.cpa, W1.cpa) },
-                    { label: "NTB CPA", value: `$${W2.ntbCPA.toFixed(2)}`, delta: fmtDeltaPct(W2.ntbCPA, W1.ntbCPA) },
-                    { label: "Cost / DPV", value: `$${W2.costPerDPV.toFixed(2)}`, delta: fmtDeltaPct(W2.costPerDPV, W1.costPerDPV) },
-                    { label: "ROAS", value: `${W2.roas.toFixed(2)}x`, delta: fmtDeltaPct(W2.roas, W1.roas) },
-                    { label: "Spend", value: fmtCurrency(W2.spend), delta: fmtDeltaPct(W2.spend, W1.spend) },
-                    { label: "Sales", value: fmtCurrency(W2.sales), delta: fmtDeltaPct(W2.sales, W1.sales) },
+                    { label: "CPA",        w1: `$${W1.cpa.toFixed(2)}`,        w2: `$${W2.cpa.toFixed(2)}`,        delta: fmtDeltaPct(W2.cpa, W1.cpa) },
+                    { label: "NTB CPA",    w1: `$${W1.ntbCPA.toFixed(2)}`,     w2: `$${W2.ntbCPA.toFixed(2)}`,     delta: fmtDeltaPct(W2.ntbCPA, W1.ntbCPA) },
+                    { label: "Cost / DPV", w1: `$${W1.costPerDPV.toFixed(2)}`, w2: `$${W2.costPerDPV.toFixed(2)}`, delta: fmtDeltaPct(W2.costPerDPV, W1.costPerDPV) },
+                    { label: "ROAS",       w1: `${W1.roas.toFixed(2)}x`,       w2: `${W2.roas.toFixed(2)}x`,       delta: fmtDeltaPct(W2.roas, W1.roas) },
+                    { label: "Spend",      w1: fmtCurrency(W1.spend),          w2: fmtCurrency(W2.spend),          delta: fmtDeltaPct(W2.spend, W1.spend) },
+                    { label: "Sales",      w1: fmtCurrency(W1.sales),          w2: fmtCurrency(W2.sales),          delta: fmtDeltaPct(W2.sales, W1.sales) },
                   ].map(m => (
-                    <div key={m.label} className="grid grid-cols-[1fr_auto_auto] items-baseline gap-3 pb-1.5 border-b border-border last:border-b-0 last:pb-0">
-                      <span className="font-display font-bold text-[11px] uppercase tracking-wide text-muted-foreground">{m.label}</span>
-                      <span className="font-display font-extrabold text-sm tabular-nums">{m.value}</span>
-                      <span className={`font-body text-[10px] tabular-nums ${m.delta.startsWith("+") ? "text-emerald-600" : m.delta.startsWith("-") ? "text-red-600" : "text-muted-foreground"}`}>
+                    <div key={m.label} className="grid grid-cols-[1fr_auto_auto_auto] gap-x-3 items-baseline py-1 border-b border-border/50 last:border-b-0">
+                      <span className="font-display font-bold text-[10px] uppercase tracking-wide text-muted-foreground">{m.label}</span>
+                      <span className="font-body text-[11px] tabular-nums text-muted-foreground text-right">{m.w1}</span>
+                      <span className="font-display font-extrabold text-[12px] tabular-nums text-right">{m.w2}</span>
+                      <span className={`font-body text-[10px] tabular-nums text-right ${m.delta.startsWith("+") ? "text-emerald-600" : m.delta.startsWith("-") ? "text-red-600" : "text-muted-foreground"}`}>
                         {m.delta}
                       </span>
                     </div>
